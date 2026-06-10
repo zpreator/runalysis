@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.venv
+.python-version
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# YOLO weights (large, download separately)
+*.pt
+*.task
+
+# Raw run videos (90-100MB each — not tracked in git)
+runs/*/video.mp4
+runs/*/pose_yolo_video.mp4
+runs/*/predicted.mp4
