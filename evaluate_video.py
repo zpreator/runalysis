@@ -240,24 +240,24 @@ def draw_prediction(img, label: str, proba: np.ndarray, classes: list):
     h, w = img.shape[:2]
     color = CLASS_COLORS.get(label, (200, 200, 200))
 
-    # Main label banner
+    # Main label banner — tall enough for large text
     overlay = img.copy()
-    cv2.rectangle(overlay, (0, 0), (w, 80), (0, 0, 0), -1)
-    cv2.addWeighted(overlay, 0.55, img, 0.45, 0, img)
-    cv2.putText(img, label.upper().replace("_", " "), (20, 58),
-                FONT, 2.0, color, 3, cv2.LINE_AA)
+    cv2.rectangle(overlay, (0, 0), (w, 130), (0, 0, 0), -1)
+    cv2.addWeighted(overlay, 0.65, img, 0.35, 0, img)
+    cv2.putText(img, label.upper().replace("_", " "), (24, 100),
+                FONT, 4.0, color, 5, cv2.LINE_AA)
 
     # Probability bars (bottom-right)
-    bar_x  = w - 320
-    bar_y0 = h - 20 - len(classes) * 36
+    bar_x  = w - 420
+    bar_y0 = h - 20 - len(classes) * 50
     for i, (cls, p) in enumerate(zip(classes, proba)):
-        y = bar_y0 + i * 36
-        bar_w = int(280 * p)
+        y = bar_y0 + i * 50
+        bar_w = int(380 * p)
         c = CLASS_COLORS.get(cls, (180, 180, 180))
-        cv2.rectangle(img, (bar_x, y), (bar_x + 280, y + 26), (40, 40, 40), -1)
-        cv2.rectangle(img, (bar_x, y), (bar_x + bar_w, y + 26), c, -1)
-        cv2.putText(img, f"{cls[:12]}  {p*100:.0f}%", (bar_x + 4, y + 18),
-                    FONT, 0.55, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.rectangle(img, (bar_x, y), (bar_x + 380, y + 38), (40, 40, 40), -1)
+        cv2.rectangle(img, (bar_x, y), (bar_x + bar_w, y + 38), c, -1)
+        cv2.putText(img, f"{cls.replace('_', ' ')}  {p*100:.0f}%",
+                    (bar_x + 6, y + 26), FONT, 0.80, (255, 255, 255), 2, cv2.LINE_AA)
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
@@ -270,7 +270,9 @@ def main():
     run_dir    = Path(sys.argv[1])
     video_path = run_dir / "video.mp4"
     csv_path   = run_dir / "pose_yolo.csv"
-    out_path   = run_dir / "predicted.mp4"
+    out_path   = Path("output") / "predicted.mp4"
+    gif_path   = Path("output") / "predicted.gif"
+    out_path.parent.mkdir(exist_ok=True)
 
     if not video_path.exists():
         sys.exit(f"Missing {video_path}")
@@ -305,12 +307,17 @@ def main():
     cam_h  = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
+    GIF_W, GIF_H = 480, 270
+    GIF_FPS      = 8
+    gif_every    = max(1, round(fps / GIF_FPS))   # subsample factor
+
     out = cv2.VideoWriter(str(out_path), cv2.VideoWriter.fourcc(*"mp4v"),
                           fps, (cam_w, cam_h))
 
     current_label = None
     current_proba = np.ones(len(classes)) / len(classes)
-    frame_no = 0
+    frame_no      = 0
+    gif_frames    = []
 
     while True:
         ret, frame = cap.read()
@@ -327,14 +334,23 @@ def main():
             draw_prediction(frame, current_label, current_proba, classes)
 
         out.write(frame)
-        frame_no += 1
 
+        if frame_no % gif_every == 0:
+            gif_frames.append(cv2.cvtColor(
+                cv2.resize(frame, (GIF_W, GIF_H)), cv2.COLOR_BGR2RGB))
+
+        frame_no += 1
         if frame_no % 100 == 0:
             print(f"  {frame_no}/{n_frames} frames", end="\r")
 
     cap.release()
     out.release()
-    print(f"\nSaved: {out_path}")
+    print(f"\nSaved MP4: {out_path}")
+
+    import imageio
+    imageio.mimsave(str(gif_path), gif_frames, fps=GIF_FPS,
+                    loop=0, quantizer="nq", palettesize=256)
+    print(f"Saved GIF: {gif_path}  ({len(gif_frames)} frames)")
 
 
 if __name__ == "__main__":

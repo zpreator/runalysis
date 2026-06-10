@@ -2,7 +2,7 @@
 
 Classifying running style from video using pose estimation and machine learning — built end-to-end from data collection through a trained Random Forest classifier.
 
-<video src="output/all_styles.mp4" autoplay loop muted playsinline width="100%"></video>
+![video](output/all_styles.gif)
 
 > *Four running styles annotated in real-time: hip vertical oscillation (teal trail + right panel) and ankle-vs-knee position at foot strike. Classifier predicts style per stride.*
 
@@ -49,25 +49,28 @@ The pipeline extracts 11 biomechanical features per stride. The two most interpr
 
 **Ankle vs knee at foot strike** — horizontal distance between ankle and knee at initial contact. Positive = ankle forward of knee (overstriding). The measurement is captured at the frame just before the ankle X-velocity sign change, which corresponds to actual foot strike.
 
-<video src="output/feature_normal.mp4" autoplay loop muted playsinline width="100%"></video>
+![normal](output/feature_normal.gif)
 
 > *Normal run: teal hip trail shows the bounce arc; the measurement line stays green as the ankle consistently lands behind the knee.*
 
-<video src="output/feature_overstriding.mp4" autoplay loop muted playsinline width="100%"></video>
+![overstriding](output/feature_overstriding.gif)
 
 > *Overstriding: measurement line turns red as the ankle lands ahead of the knee.*
 
+![bouncy](output/feature_too_bouncy.gif)
+
+> *Too Bouncy: vertical oscillation turns red to indicate a larger than normal vertical hip oscillation*
 ---
 
 ## Style comparison at foot strike
 
-<video src="output/style_comparison.mp4" autoplay loop muted playsinline width="100%"></video>
+![style_comparison](output/style_comparison.gif)
 
 ---
 
 ## Live classification
 
-<video src="output/all_styles.mp4" autoplay loop muted playsinline width="100%"></video>
+![Predicted classification on test video](output/predicted.gif)
 
 Evaluating on a held-out test video (all four styles performed in sequence):
 
@@ -75,7 +78,7 @@ Evaluating on a held-out test video (all four styles performed in sequence):
 uv run python evaluate_video.py runs/20260609_181605
 ```
 
-The output video overlays the per-stride prediction with a probability bar for each class.
+The output overlays the per-stride prediction with a probability bar for each class, updated at every detected foot strike.
 
 ---
 

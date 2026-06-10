@@ -20,3 +20,6 @@ wheels/
 runs/*/video.mp4
 runs/*/pose_yolo_video.mp4
 runs/*/predicted.mp4
+
+# Large predicted output video (80MB full-res — GIF version is tracked instead)
+output/predicted.mp4
